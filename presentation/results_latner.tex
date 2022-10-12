@@ -1,0 +1,355 @@
+\documentclass[xcolor=table]{beamer}
+
+% \rowcolors{1}{gray!30}{gray!10}
+
+\usetheme{Boadilla}
+\usecolortheme{dolphin}
+\useoutertheme[subsection=false]{smoothbars}
+
+\setbeamercolor{frametitle}{fg = black, bg = white} 
+\setbeamercolor{palette primary}{use=structure,fg=white,bg=structure.fg!60!white}
+\setbeamercolor{palette secondary}{use=structure,fg=white,bg=structure.fg!90!white}
+\setbeamercolor{palette tertiary}{use=structure,fg=white,bg=structure.fg!120!white}
+\setbeamercolor{palette quaternary}{use=structure,fg=black,bg=white} %Top bar
+
+\setbeamertemplate{enumerate subitem}[circle]%
+\renewcommand{\insertsubenumlabel}{\alph{enumii}}
+
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage[table]{xcolor}
+\definecolor{lightgray}{gray}{0.9}
+
+\hypersetup{
+    colorlinks,
+    citecolor=blue,
+    linkcolor=blue
+}
+
+\footnotesize \let\small\footnotesize
+
+\author{Jonathan P. Latner, PhD}
+\title{Binary classification problem}
+\date{\today}
+
+\beamertemplatenavigationsymbolsempty 
+\setbeamerfont{page number in head/foot}{size=\tiny}
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{section in toc}[sections numbered]
+
+\begin{document}
+
+\frame{\frametitle{ }
+\titlepage
+\thispagestyle{empty}
+}
+
+\section{Introduction}
+\frame{\frametitle{Overview} 
+\tableofcontents[hideallsubsections]
+}
+
+\frame{\frametitle{Goal} 
+
+\begin{itemize}
+    \item Explore both data sets, note down your key observations along with a kind of summary.
+    \item Build a classifier – a prediction model based only on the training data, with the goal of achieving the best performance possible on the validation data.
+    \item Visualize results and the work on this classification task.
+\end{itemize}
+}
+
+\section{Summary statistics}
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Factor variables}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_vars_fctr.pdf}}
+    \label{graph_vars_fctr}
+\end{figure}
+}
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Factor variables (correlation)}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_corrplot_fctr.pdf}}
+    \label{graph_corrplot_fctr.pdf}
+\end{figure}
+}
+
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Numerical variables}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_vars_num.pdf}}
+    \label{graph_vars_num}
+\end{figure}
+}
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Numerical variables (correlation)}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_corrplot_num.pdf}}
+    \label{graph_corrplot_num}
+\end{figure}
+}
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Numerical variables (missing)}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_vars_num_msng.pdf}}
+    \label{graph_vars_num_msng}
+\end{figure}
+}
+
+\frame{\frametitle{Initial lessons}
+\begin{itemize}
+    \item Classlabel (dv)
+    \begin{itemize}
+        \item v17 $=$ classLabel: keep classLabel, drop v17
+        \item Difference in distribution between training and validation data
+        \item Questionable power to predict 0/no, given low count in training data
+    \end{itemize}
+    \item v3 has mean, median, mode, and sd of 0, drop v3
+    \item v12 training data has no "o"
+    \item v4 validation data has no "l"
+    \item v14 and especially v15 have a very long tail
+    \item v13 and v15 perfectly correlated, drop v15
+    \item Variable v16
+    \begin{itemize}
+        \item v9 and v16 are perfectly correlated (non missings)
+        \item v16 has lots of missing observations (but missing in both traning and validation data)
+        \item or is v9, v16 without any missing?
+        % \item Steps to handle missing data in v16 in validation data
+        % \begin{itemize}
+        %     \item Assume all missings are ``f''
+        %     \item Assume all missings are ``t''
+        %     \item Assume random and even distribution of variable values (50/50)
+        %     \item Assume missings follow distribution of variable values in training (39/61)
+        % \end{itemize}
+    \end{itemize}
+\end{itemize}
+}
+
+\section{Model 1: Compare}
+\frame{\frametitle{Steps} 
+\begin{itemize}
+    \item Compare different models with all IVs
+    \begin{itemize}
+        \item a) GLM
+        \item b) Decision tree
+        \item c) Random forest
+        \item d) Naive Bayes
+    \end{itemize}
+    \item Examine model fit, summary statistics, etc.
+\end{itemize}
+}
+
+\frame{\frametitle{Confusion matrix} 
+\begin{table}[!h]
+    % \caption{Model 1}
+    \begin{center}
+    \input{../tables/table_model_01_cm.tex}
+    \label{table_model_01_cm}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{} 
+\begin{table}[!h]
+    \caption{Parameter estimates from logistic regression model 1a}
+    \begin{center}
+    \resizebox{.35\textwidth}{!}{\input{../tables/model_01.tex}}
+    \label{glm_model_01}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Variable importance}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_model_01_importance.pdf}}
+    \label{graph_model_01_importance}
+\end{figure}
+}
+
+\frame{\frametitle{Lessons from model GLM} 
+\begin{itemize}
+    \item Decent model fit
+    \begin{itemize}
+        \item Good at predicting 0
+        \item Bad at predicting 1
+    \end{itemize}
+    \item Drop variables?
+    \begin{itemize}
+        \item Categorical - v1, v4, combine v12s/v12p
+        \item Continuous - v13, v14
+    \end{itemize}
+\end{itemize}
+}
+
+\frame{\frametitle{Add decision tree} 
+\begin{table}[!h]
+    \begin{center}
+    \input{../tables/table_model_02_cm.tex}
+    \label{table_model_02_cm}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{Lessons from model 2} 
+\begin{itemize}
+    \item Slightly better fit
+    \item Slightly better at predicting 0 (model 1 already good)
+    \item Slightly better, but still bad at predicting 1
+\end{itemize}
+}
+
+\frame{\frametitle{Add random forest} 
+\begin{table}[!h]
+    \begin{center}
+    \resizebox{.75\textwidth}{!}{\input{../tables/table_model_03_cm.tex}}
+    \label{table_model_03_cm}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{Add naive bayes} 
+\begin{table}[!h]
+    \begin{center}
+    \resizebox{.75\textwidth}{!}{\input{../tables/table_model_04_cm.tex}}
+    \label{table_model_04_cm}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{Summary} 
+\begin{itemize}
+    \item Random forest regression offers best fit
+    \item Also much, much slower (time/energy costs money)
+    \item Next steps: improve the model
+\end{itemize} 
+}
+
+\section{Model 2: Forest}
+\frame{\frametitle{Steps}
+\begin{itemize}
+    \item Begin with random forest baseline (all IVs, same as model 1c)
+    \item Examine model fit, summary statistics, etc.
+    \item Make adjustments
+    \item Rerun model
+    \item Repeat as necessary
+\end{itemize} 
+}
+
+\frame{\frametitle{Confusion matrix} 
+\begin{table}[!h]
+    \begin{center}
+    \resizebox{.5\textwidth}{!}{\input{../tables/table_rf_model_rf_01_cm.tex}}
+    \label{table_rf_model_rf_01_cm}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Variable importance}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_model_rf_01_importance.pdf}}
+    \label{graph_model_rf_01_importance}
+\end{figure}
+}
+
+\frame{\frametitle{Lessons} 
+\begin{itemize}
+    \item Combine v12s/v12p
+\end{itemize} 
+}
+
+\frame{\frametitle{Confusion matrix} 
+\begin{table}[!h]
+    \begin{center}
+    \resizebox{.75\textwidth}{!}{\input{../tables/table_rf_model_rf_02_cm.tex}}
+    \label{table_rf_model_rf_02_cm}
+    \end{center}
+\end{table}
+}
+
+\frame{\frametitle{}
+\begin{figure}
+    \caption{Variable importance}
+    \resizebox{.9\textwidth}{!}{\includegraphics{../graphs/graph_model_rf_02_importance.pdf}}
+    \label{graph_model_rf_02_importance}
+\end{figure}
+}
+
+
+\frame{\frametitle{Lessons} 
+\begin{itemize}
+    \item Slightly worse fit, but faster
+    \item Combine v4y/v4u
+    \item Drop v10
+\end{itemize} 
+}
+
+\frame{\frametitle{Confusion matrix} 
+\begin{table}[!h]
+    \begin{center}
+    \resizebox{.75\textwidth}{!}{\input{../tables/table_rf_model_rf_03_cm.tex}}
+    \label{table_rf_model_rf_03_cm}
+    \end{center}
+\end{table}
+}
+
+
+\frame{\frametitle{Lessons} 
+\begin{itemize}
+    \item Slightly worse fit, but faster   
+\end{itemize} 
+}
+
+
+\section{Conclusion}
+\frame{\frametitle{} 
+\begin{itemize}
+    \item Random forest is preferable model
+    \begin{itemize}
+        \item Good at predicting 0 (4\% false negative)
+        \item Okay at predicting 1 (25\% false positive)
+    \end{itemize}
+    \item Model includes following variable modifications:
+    \begin{itemize}
+        \item v17 = classLabel (drop v17)
+        \item assume that v9 = v16, but without missing (drop v16)
+        \item v15 = v13, perfectly correlated (drop v15)
+        \item Drop v3 due to no variation (mean, median, mode, and sd = 0)
+        \item v12s = v12p (combine values)
+        \item Drop v12o (in validation, but not training data) 
+    \end{itemize}
+    \item Next steps: model improvement
+    \begin{itemize}
+        \item Focus on what predicts 1
+        \item Interacting variables
+        \begin{itemize}
+            \item v8 and v9?
+        \end{itemize}
+        \item Binning continuous variables
+        \begin{itemize}
+            \item v10, v13, v14 all have lots of 0's 
+        \end{itemize}
+    \end{itemize}
+\end{itemize} 
+}
+
+\frame[c]{\frametitle{}
+\centering
+Thank you\\\
+}
+
+
+
+\end{document}
+
+
