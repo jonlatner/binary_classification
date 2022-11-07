@@ -2,23 +2,15 @@
 # TOP COMMANDS
 ###########################
 # create empty session
-def clear_all():
-    """Clears all the variables from the workspace."""
-    gl = globals().copy()
-    for var in gl:
-        if var[0] == '_': continue
-        if 'func' in str(globals()[var]): continue
-        if 'module' in str(globals()[var]): continue
-
-        del globals()[var]
-if __name__ == "__main__":
-    clear_all()
+globals().clear()
 
 # load libraries
 import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import seaborn as sns
+from plotnine import *
 
 # beginning commands
 pd.set_option('display.float_format', str) # drop scientific notation
@@ -26,7 +18,7 @@ pd.set_option('display.max_columns', None) # display max columns
 plt.clf() # this clears the figure
 
 # file paths - adapt main_dir pathway
-main_dir = "/Users/jonathanlatner/Desktop/gfk_assignment/"
+main_dir = "/Users/jonathanlatner/GitHub/binary_classification/"
 data_files = "data_files/"
 graphs = "graphs/"
 tables = "tables/"
@@ -46,7 +38,11 @@ tables = "tables/"
 ###########################
 
 df_training = pd.read_csv(os.path.join(main_dir,data_files,"training.csv"),sep=";", decimal=",", thousands=".")
+df_training["type"] = "training"
 df_validation = pd.read_csv(os.path.join(main_dir,data_files,"validation.csv"),sep=";", decimal=",", thousands=".")
+df_validation["type"] = "validation"
+
+df_combine = pd.concat([df_training, df_validation])
 
 ###########################
 # Data cleaning 
@@ -56,62 +52,45 @@ df_validation = pd.read_csv(os.path.join(main_dir,data_files,"validation.csv"),s
 df_training.columns
 df_training.describe()
 df_training.info()
-
-# missing values?
-df_training.isnull().sum() 
 df_training["v9"].value_counts(dropna=False).sort_index() 
 
-## Create one df for each set of numeric or factor variables
-df_training_num = df_training.select_dtypes(exclude = ['object'])
-df_training_fctr = df_training.select_dtypes(include = ['object'])
+# count missings for each variable
+df_training.isnull().sum() 
+
+###########################
+# Plot categorical variables 
+# Compare factor variables (bar chart)
+###########################
+
+# create dataframe for factor variables
+df_combine_fctr = df_combine.select_dtypes(include = ['object'])
 
 # count unique factors for each variable
-print(df_training_fctr.nunique(axis=0))
+df_combine_fctr.nunique(axis=0)
 
-df_validation_num = df_validation.select_dtypes(exclude = ['object'])
-df_validation_fctr = df_validation.select_dtypes(include = ['object'])
+# convert from wide format to tidy format
+df_combine_fctr_long = df_combine_fctr.melt(id_vars='type')
+df_combine_fctr_long
 
-df_validation_num <- df_validation[ , num_cols]
-df_validation_fctr <- df_validation[ , fctr_cols]
 
-# Factor variables: summarize and compare data sets ----
+p=(ggplot(data=df_combine_fctr_long) +
+        geom_bar(mapping = aes(x="value",fill="type"), position=position_dodge()) +
+        facet_wrap("~variable", scales = "free", nrow = 1) + 
+        # geom_text(aes(label = n), hjust = -1) +
+        # scale_y_continuous(limits = c(0,1)) +
+        theme(
+                panel_grid_minor = element_blank(),
+                legend_position = "bottom",
+                legend_title = element_blank(),
+                legend_key_width=40,
+                axis_title = element_blank(),
+                subplots_adjust={'wspace':0.75},
+                axis_line_y = element_line(color="black", size=.5),
+                axis_line_x = element_line(color="black", size=.5)
+        ))
+p
 
-## Create loop for factor variables for summary statistics ----
-fctr_cols <- colnames(df_training_fctr) # Create vector of variable names for each set of factor variables 
-df_training_fctr_summary <- data.frame()
-for (v in fctr_cols) {
-        t <- data.frame(prop.table(table(df_training_fctr[[v]], useNA = "ifany")))
-        t$var <- v
-        t$type <- "Training"
-        df_training_fctr_summary <- rbind(df_training_fctr_summary,t)
-}
-
-df_validation_fctr_summary <- data.frame()
-for (v in fctr_cols) {
-        t <- data.frame(prop.table(table(df_validation_fctr[[v]], useNA = "ifany")))
-        t$var <- v
-        t$type <- "Validation"
-        df_validation_fctr_summary <- rbind(df_validation_fctr_summary,t)
-}
-
-df_factor_summary <- rbind(df_training_fctr_summary,df_validation_fctr_summary)
-
-## Compare variables (bar chart) ----
-ggplot(data=df_factor_summary, aes(x=Var1, y=Freq,fill=type)) +
-        facet_grid(~var, scales = "free_x") + 
-        geom_bar(stat="identity", position=position_dodge()) +
-        geom_text(aes(label = n), hjust = -1) +
-        scale_y_continuous(limits = c(0,1)) +
-        theme(panel.grid.minor = element_blank(), 
-              legend.position = "bottom",
-              legend.title = element_blank(),
-              legend.key.width=unit(2, "cm"),
-              axis.title = element_blank(),
-              axis.line.y = element_line(color="black", size=.5),
-              axis.line.x = element_line(color="black", size=.5)
-        )
-
-# ggsave(paste0(graphs,"graph_vars_fctr.pdf"), height = 6, width = 9, plot = last_plot())
+ggsave(plot = p, filename = "graph_vars_fctr.pdf", path = os.path.join(main_dir,graphs), width = 10, height = 4)
 
 ## Graph correlation matrix ----
 model.matrix(~0+., data=df_training_fctr) %>% 

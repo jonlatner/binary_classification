@@ -1,9 +1,6 @@
 # binary_classification
  Binary classification problem
 
-# binary_classification
- Binary classification problem
-
 A. Most relevant folders/files are:
 
     1) presentation/results_latner.pdf -- this summarizes the analysis and results
